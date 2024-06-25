@@ -1,31 +1,39 @@
 from tournament import WINNER_SIDE, LOSER_SIDE
 from player import Player
 
-class Match:
-    player1 = None
-    player2 = None
-    player1_name = None       # The name of the first player in the match
-    player1_from = None  # which match did player 1 come from
-    player2 = None       # The name of the second player in the match
-    player2_from = None  # which match did player 2 come from
-    winner = None        # who won the match
-    winner_match = None  # the reference for the match the winner will play next
-    loser_side = False   # is this a lose side match
-    loser_match = None   # the reference to the match the loser will play next
-    tournament_round = 0 # which round this match is in
-    match_in_round = 0   # the number if this match within the round
 
-    def __init__(self, loser_side, tournament_round, match_in_round):
+class Match:
+    def __init__(
+            self,
+            loser_side: bool,
+            tournament_round: int,
+            match_in_round: int,
+            player1: Player = None,
+            player2: Player = None,
+    ):
         self.loser_side = loser_side
         self.tournament_round = tournament_round
         self.match_in_round = match_in_round
+        self.player1 = player1
+        self.player2 = player2
+        self.loser_match_ref = ''
+        self.winner_match_ref = ''
 
-    def set_player1(self, name: str, match_from: str, player1: bool=True):
-        if player1:
-            player1
-            pass
-        else:
-            pass
+    @property
+    def player1(self):
+        return self.player1
+
+    @player1.setter
+    def player1(self, player: Player):
+        self.player1 = player
+
+    @property
+    def player2(self):
+        return self.player2
+
+    @player2.setter
+    def player2(self, player: Player):
+        self.player2 = player
 
     def player_str(self, player1=True):
         player_from = ''
@@ -42,25 +50,13 @@ class Match:
         return f'{player_name}({player_from})'
 
     def __repr__(self):
-        match_reference = self.match_reference()
-        string_val = f'<Match {match_reference} {self.player_str(True)} vs {self.player_str(False)}'
-        if self.winner_match is not None:
-            string_val += f' W={self.winner_match}'
-        if self.loser_match is not None:
-            string_val += f' L={self.loser_match}'
-        string_val += '>'
-        return string_val
+        return self.__str__()
 
     def __str__(self):
-        match_reference = self.match_reference()
-        string_val = f'{match_reference} {self.player_str(True)} vs {self.player_str(False)}'
-        if self.winner_match is not None:
-            string_val += f' W={self.winner_match}'
-        if self.loser_match is not None:
-            string_val += f' L={self.loser_match}'
-        return string_val
+        match_reference = self.match_ref
+        return f'{match_reference} {self.player_str(True)} vs {self.player_str(False)} {self.winner_match_ref} {self.loser_match}'
 
-    def match_reference(self):
+    @property
+    def match_ref(self):
         winner_or_loser = WINNER_SIDE if not self.loser_side else LOSER_SIDE
         return f'{winner_or_loser}{self.tournament_round}:{self.match_in_round}'
-

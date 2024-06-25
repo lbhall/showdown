@@ -1,3 +1,4 @@
+LOGFILE_NAME = 'showdown.log'
 MAX_PLAYERS = 32
 WINNER_SIDE = 'W'
 LOSER_SIDE = 'L'
