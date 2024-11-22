@@ -1,8 +1,18 @@
+import logging
+from typing import Optional
 from constants import (
     WINNER_SIDE,
     LOSER_SIDE,
-    LOSER_CONFIGURATION,
+    LOGFILE_NAME,
 )
+from utils import (
+    get_bracket_size,
+    loser_configuration,
+)
+from match import Match
+
+log = logging.getLogger(LOGFILE_NAME)
+
 
 class Tournament:
     name = 'My Tournament'
@@ -16,11 +26,13 @@ class Tournament:
     max_winner_round = 0
     max_loser_round = 0
 
-    def __init__(self, num_players, double_elimination=False):
+    def __init__(self, name: str, num_players: int, double_elimination: bool = False):
         self.number_of_players = num_players
         self.double_elimination = False if num_players <= 2 else double_elimination
-        self.set_bracket_size()
-        logging.info(f'Init Tournament-> Num Players: {self.number_of_players}, Bracket Size: {self.bracket_size}, Double Elimination: {self.double_elimination}')
+        self.bracket_size = get_bracket_size(num_players)
+        logging.info(f'Init Tournament-> Num Players: {self.number_of_players}, Bracket Size: {self.bracket_size}, '
+                     f'Double Elimination: {self.double_elimination}')
+        self.loser_configuration = loser_configuration(self.number_of_players)
 
     def get_max_round(self, bracket_side='W'):
         return list(self.tournament_bracket[bracket_side].keys())[-1]
@@ -33,7 +45,7 @@ class Tournament:
 
         return ''
 
-    def find_match(self, match_ref) -> Optional["Match"]:
+    def find_match(self, match_ref) -> Optional[Match]:
         try:
             if match_ref == 'FINALS':
                 return self.find_last_winner_match_ref()
@@ -62,13 +74,6 @@ class Tournament:
                 return 6
             case 5:
                 return 8
-
-    def set_bracket_size(self):
-        self.bracket_size = 0
-        power_of_2 = 0
-        while self.bracket_size < self.number_of_players:
-            power_of_2 += 1
-            self.bracket_size = pow(2, power_of_2)
 
     def map_from(self, from_ref, to_ref):
         match = self.find_match(to_ref)
@@ -113,11 +118,11 @@ class Tournament:
         self.max_winner_round = tournament_round
 
         if self.double_elimination:
-            new_match = Match(False, tournament_round, 1)
+            new_match = Match(True, tournament_round, 1)
             self.tournament_bracket[WINNER_SIDE][tournament_round] = [new_match]
 
             # generate the loser side draw
-            for loser_round in range(loser_configuration[str(self.bracket_size)]['number_of_rounds']):
+            for loser_round in range(self.loser_configuration['number_of_rounds']):
                 tournament_round = loser_round + 1
                 self.tournament_bracket[LOSER_SIDE][tournament_round] = self.generate_loser_round(tournament_round)
                 self.max_loser_round = tournament_round
